@@ -1,12 +1,14 @@
 ---
-title: "Gun vs Vehicle Deaths"
-author: "Mike Chirico mchirico@gmail.com"
+title: "Drug vs Alcohol Deaths"
+author: "Group 4"
 output:
   html_document:
     fig_width: 8
+    highlight: tango
     number_sections: no
     theme: united
-    highlight: tango
+    toc: yes
+  pdf_document:
     toc: yes
 ---
 ## Summary
@@ -23,19 +25,17 @@ largest part of the population. [kaggle: 2013 American Community Survey](https:/
 
 Also note the following two ICD10codes:
 
-1.	 Icd10Code x74 
-   Description:  “Intentional self-harm by other 
-  and unspecified firearm discharge.”  If you jump to the bottom, 
-  you’ll see that there are 12,921 deaths that fit this classification. 
-2.	 The 2nd total highest Icd10Code is X95 
-   Description: “Assault by other and unspecified firearm discharge.”
+1.	 Icd10Code x44 
+   Description: Accidental poisoning by and exposure to other and unspecified drugs, medicaments and biological substances. If you jump to the bottom, you'll see that there are 18,627 deaths that fit this classification. 
+2.	 The 2nd total highest Icd10Code is X42 
+   Description: Accidental poisoning by and exposure to narcotics and psychodysleptics [hallucinogens], not elsewhere classified.
 
 
 
 
 ## Running the Analysis
 
-Below taking a look at Gun vs. Vehicle deaths by age.
+Below taking a look at Alcohol vs. Drug deaths by age.
 
 
 ```{r, warning=FALSE, message=FALSE}
@@ -48,19 +48,19 @@ library(knitr)
 
 library(DT)
 
-db <- dbConnect(dbDriver("SQLite"), "../input/database.sqlite")
+db <- dbConnect(dbDriver("SQLite"), "input/database.sqlite")
 
 query <-paste("
 
 select 
-    v.Age,v.Total Vehicle_Total ,v.White Vehicle_White,
-    v.Black Vehicle_Black,v.All_Other  Vehicle_Other,
-    g.Total Gun_Total,
-    g.White Gun_White,g.Black Gun_Black,g.All_Other Gun_Other
+    a.Age,a.Total Alcohol_Total ,a.White Alcohol_White,
+    a.Black Alcohol_Black,a.All_Other  Alcohol_Other,
+    g.Total Drug_Total,
+    g.White Drug_White,g.Black Drug_Black,g.All_Other Drug_Other
 from (
   select 
       Age,count(*) Total ,sum(Race == 1) as White, 
-      sum(Race == 2) as Black, sum(Race >=3 or   Race == 0) All_Other
+      sum(Race == 2) as Black, sum(Race != 1 and Race != 2) All_Other
    from DeathRecords d,
      (
      select 
@@ -69,57 +69,52 @@ from (
          EntityAxisConditions e,
          (
             select * 
-            from Icd10Code where Description like ('%vehicle%')
+            from Icd10Code where Description like '%alcohol%'
  
          ) as c 
         where e.Icd10Code = c.code) as f
-    where d.id = f.id and AgeType = 1 
+    where d.id = f.id and AgeType = 1 and Age < 500
     group by Age
-    ) as v, -- Vehicle
+    ) as a, -- Alcohol
 
 (
  select 
      Age,count(*) Total ,sum(Race == 1) as White, 
-     sum(Race == 2) as Black, sum(Race >=3 or   Race == 0) All_Other
+     sum(Race == 2) as Black, sum(Race != 1 and Race != 2) All_Other
    from DeathRecords d,
        (select 
            distinct e.DeathRecordId as id 
            from 
               EntityAxisConditions e,
               (
-
-        -- Every Firearm discharge, except Legal intervention
+ -- Every Firearm discharge, except Legal intervention
         select 
            Code,Description 
            from Icd10Code
-           where description like '%discharge%' 
-             and description not in  ('Urethral discharge',
-             'Discharge of firework',
-             'Legal intervention involving firearm discharge')
- 
+           where description like '%drug%' 
               ) as c 
         where e.Icd10Code = c.code) as f
-    where d.id = f.id and AgeType = 1 
+    where d.id = f.id and AgeType = 1 and Age < 500
     group by Age
     ) as g
-     where g.Age = v.Age
+     where g.Age = a.Age
      -- End of SQL
 ")
 
-allVehicleGun <- dbGetQuery(db, query)
+allAlcoholDrug <- dbGetQuery(db, query)
 
 # -- Just Look at Totals
-data <- select(allVehicleGun, Vehicle_Total,Gun_Total,Age) %>% 
+data <- select(allAlcoholDrug, Alcohol_Total,Drug_Total,Age) %>% 
           gather(Group,Deaths,-Age) 
 
 g <- ggplot(dat = data, 
        aes(x=Age, y=Deaths)) + 
       geom_line(aes(colour=Group, group=Group)) + 
       geom_point(aes(colour=Group, shape=Group, group=Group), size=1)+
-  ggtitle("Gun vs. Vehicle Deaths\nby Age")
+  ggtitle("Drugs vs. Alcohol Deaths\nby Age")
 
 ```
-### Graph of Guns vs. Vehicle
+### Graph of Drugs vs. Alcohol
 
 The graph below is interesting. Note the 2nd jump in deaths, after
 age 50.
@@ -141,15 +136,15 @@ it starts to get interesting.
 
 # Let's see where the jump is coming from.
 
-data <- select(allVehicleGun, Vehicle_White,Vehicle_Black,
-               Gun_White,Gun_Black,Age) %>% 
+data <- select(allAlcoholDrug, Alcohol_White, Alcohol_Black,
+               Drug_White, Drug_Black,Age) %>% 
                gather(Group,Deaths,-Age) 
 
 ggplot(dat = data, 
        aes(x=Age, y=Deaths)) + 
       geom_line(aes(color=Group, group=Group)) + 
       geom_point(aes(color=Group, shape=Group, group=Group), size=1)+
-  ggtitle("Gun vs. Vehicle Deaths\nby Age and Race")
+  ggtitle("Drug vs. Alcohol Deaths\nby Age and Race")
 
 
 
@@ -163,13 +158,13 @@ to see this in table form.
 
 ```{r}
 # Look at the numbers
-datatable(allVehicleGun, class = 'compact')
+datatable(allAlcoholDrug, class = 'compact')
 ```
 
 
 ```{r}
 
-db <- dbConnect(dbDriver("SQLite"), "../input/database.sqlite")
+db <- dbConnect(dbDriver("SQLite"), "input/database.sqlite")
 
 query <-paste("
 
@@ -189,9 +184,7 @@ select Icd10Code,count(*) count from
 
      -- Every Firearm discharge, except Legal intervention
     select Code,Description from Icd10Code
-     where description like '%discharge%' 
-     and description not in  ('Urethral discharge','Discharge of firework',
-     'Legal intervention involving firearm discharge')
+     where description like '%drug%'
  
    ) as c 
   where e.Icd10Code = c.code) as f
@@ -217,10 +210,10 @@ vData <- dbGetQuery(db, query)
 ### Top Icd10Codes
 
 See the table below for an explaination of the top
-ICD10codes.  Please note the top 2 codes, and the
+ICD10codes. Please note the top 2 codes, and the
 count (total number of deaths) for each entry.  
 
-The top code X74, list 'Intentional self-harm..', which we'll assume is
+The top code X44, list 'Accidental poisoning by and exposure to..', which we'll assume is
 suicide.
 
 
@@ -240,36 +233,36 @@ kable(vData)
 
 ## Explaination:
 
-X74 – “Intentional self-harm by other and unspecified firearm discharge" is skewing the results. You can see in the graph below W_X74 (Race White) compared to B_X74 (Race Black) the differences.  
+X44 "Accidental poisoning by and exposure to other and unspecified drugs, medicaments and biological substances" is skewing the results. You can see in the graph below W_X44 (Race White) compared to B_X44 (Race Black) the differences.  
 
 
 
 ```{r}
 
-db <- dbConnect(dbDriver("SQLite"), "../input/database.sqlite")
+db <- dbConnect(dbDriver("SQLite"), "input/database.sqlite")
 
 query <-paste("
 
 
 select Age,count(*) Total ,sum(Race == 1) as White, 
-  sum(Race == 2) as Black, sum(Race >=3 or   Race == 0) All_Other,
-  sum(Race == 1 and Icd10Code == 'X74')  W_X74,
-  sum(Race == 2 and Icd10Code == 'X74')  B_X74,
+  sum(Race == 2) as Black, sum(Race != 1 and Race != 2) All_Other,
+  sum(Race == 1 and Icd10Code == 'X44')  W_X44,
+  sum(Race == 2 and Icd10Code == 'X44')  B_X44,
 
-  sum(Race == 1 and Icd10Code == 'X95')  W_X95,
-  sum(Race == 2 and Icd10Code == 'X95')  B_X95,
+  sum(Race == 1 and Icd10Code == 'X42')  W_X42,
+  sum(Race == 2 and Icd10Code == 'X42')  B_X42,
 
-  sum(Race == 1 and Icd10Code == 'X72')  W_X72,
-  sum(Race == 2 and Icd10Code == 'X72')  B_X72,
+  sum(Race == 1 and Icd10Code == 'X64')  W_X64,
+  sum(Race == 2 and Icd10Code == 'X64')  B_X64,
 
-  sum(Race == 1 and Icd10Code == 'X73')  W_X73,
-  sum(Race == 2 and Icd10Code == 'X73')  B_X73,
+  sum(Race == 1 and Icd10Code == 'X41')  W_X41,
+  sum(Race == 2 and Icd10Code == 'X41')  B_X41,
 
-  sum(Race == 1 and Icd10Code == 'X93')  W_X93,
-  sum(Race == 2 and Icd10Code == 'X93')  B_X93,
+  sum(Race == 1 and Icd10Code == 'Y14')  W_Y14,
+  sum(Race == 2 and Icd10Code == 'Y14')  B_Y14,
 
-  sum(Race == 1 and Icd10Code == 'X94')  W_X94,
-  sum(Race == 2 and Icd10Code == 'X94')  B_X94
+  sum(Race == 1 and Icd10Code == 'F191')  W_F191,
+  sum(Race == 2 and Icd10Code == 'F191')  B_F191
 
 
 
@@ -281,22 +274,20 @@ select Age,count(*) Total ,sum(Race == 1) as White,
    (
 
    select Code,Description from Icd10Code
-   where description like '%discharge%' 
-   and description not in  ('Urethral discharge','Discharge of firework',
-   'Legal intervention involving firearm discharge')
+   where description like '%drug%'
  
    
  
    ) as c 
   where e.Icd10Code = c.code) as f
-  where d.id = f.id and AgeType = 1 
+  where d.id = f.id and AgeType = 1 and Age < 500
  group by Age;
 
 ")
 
 v2Data <- dbGetQuery(db, query)
 
-data <- select(v2Data, W_X74,B_X74,
+data <- select(v2Data, W_X44,B_X44,
                Age) %>% 
   gather(Group,Total,-Age) 
 
@@ -304,12 +295,12 @@ g <- ggplot(dat = data,
        aes(x=Age, y=Total)) + 
       geom_line(aes(color=Group, group=Group)) + 
       geom_point(aes(color=Group, shape=Group, group=Group), size=1)+
-  ggtitle("X74 - Intentional self-harm by other\n and unspecified firearm discharge\nby Age")
+  ggtitle("X44 - Accidental poisoning by and exposure to other and unspecified drugs, medicaments and biological substances\nby Age")
 
 ```
 ### Graph of X74
 
-Here's the actual graph of X74.  You can see the impact.
+Here's the actual graph of X44.  You can see the impact.
 
 
 ```{r}
