@@ -15,9 +15,9 @@ output:
 
 The data seems to contradict what you read in the media:
 
-1.	Gun related deaths outnumber vehicle deaths.
-2.	White race related gun deaths are the highest.
-3.	White race and gun deaths seem somewhat correlated with vehicle deaths.
+1.	Drug related deaths are the higher than alcohol related deaths up until the age of 44.
+2.	White race related alcohol deaths are the highest.
+3.	Disregarding race, drug realted deaths are highest for the younger population and alcohol related deaths are highest for the older population.
 
 A few things to note: Whites in the 50+ age group, may make up the 
 largest part of the population. [kaggle: 2013 American Community Survey](https://www.kaggle.com/mchirico/d/census/2013-american-community-survey/population-by-age-and-race)
@@ -25,10 +25,10 @@ largest part of the population. [kaggle: 2013 American Community Survey](https:/
 
 Also note the following two ICD10codes:
 
-1.	 Icd10Code x44 
-   Description: Accidental poisoning by and exposure to other and unspecified drugs, medicaments and biological substances. If you jump to the bottom, you'll see that there are 18,627 deaths that fit this classification. 
-2.	 The 2nd total highest Icd10Code is X42 
-   Description: Accidental poisoning by and exposure to narcotics and psychodysleptics [hallucinogens], not elsewhere classified.
+1.	 Icd10Code K703 
+   Description: Alcoholic cirrhosis of liver. 
+2.	 The 2nd total highest Icd10Code is F102 
+   Description: Mental and behavioural disorders due to use of alcohol: Dependence syndrome.
 
 
 
@@ -184,7 +184,7 @@ select Icd10Code,count(*) count from
 
      -- Every Firearm discharge, except Legal intervention
     select Code,Description from Icd10Code
-     where description like '%drug%'
+     where description like '%alcohol%'
  
    ) as c 
   where e.Icd10Code = c.code) as f
@@ -213,15 +213,13 @@ See the table below for an explaination of the top
 ICD10codes. Please note the top 2 codes, and the
 count (total number of deaths) for each entry.  
 
-The top code X44, list 'Accidental poisoning by and exposure to..', which we'll assume is
-suicide.
+The top code K703, list 'Alcoholic cirrhosis of liver'.
 
 
 
 ```{r}
 
 # This might explain why the results seem odd.
-# Note the category 'Intentional self-harm by other and unspecified firearm discharge'
 kable(vData)
 
 
@@ -233,7 +231,7 @@ kable(vData)
 
 ## Explaination:
 
-X44 "Accidental poisoning by and exposure to other and unspecified drugs, medicaments and biological substances" is skewing the results. You can see in the graph below W_X44 (Race White) compared to B_X44 (Race Black) the differences.  
+K703 "Alcoholic cirrhosis of liver" is skewing the results. You can see in the graph below W_K703 (Race White) compared to B_K703 (Race Black) the differences.  
 
 
 
@@ -246,23 +244,23 @@ query <-paste("
 
 select Age,count(*) Total ,sum(Race == 1) as White, 
   sum(Race == 2) as Black, sum(Race != 1 and Race != 2) All_Other,
-  sum(Race == 1 and Icd10Code == 'X44')  W_X44,
-  sum(Race == 2 and Icd10Code == 'X44')  B_X44,
+  sum(Race == 1 and Icd10Code == 'K703')  W_K703,
+  sum(Race == 2 and Icd10Code == 'K703')  B_K703,
+
+  sum(Race == 1 and Icd10Code == 'F102')  W_F102,
+  sum(Race == 2 and Icd10Code == 'F102')  B_F102,
 
   sum(Race == 1 and Icd10Code == 'X42')  W_X42,
   sum(Race == 2 and Icd10Code == 'X42')  B_X42,
 
-  sum(Race == 1 and Icd10Code == 'X64')  W_X64,
-  sum(Race == 2 and Icd10Code == 'X64')  B_X64,
+  sum(Race == 1 and Icd10Code == 'F101')  W_F101,
+  sum(Race == 2 and Icd10Code == 'F101')  B_F101,
 
-  sum(Race == 1 and Icd10Code == 'X41')  W_X41,
-  sum(Race == 2 and Icd10Code == 'X41')  B_X41,
+  sum(Race == 1 and Icd10Code == 'K709')  W_K709,
+  sum(Race == 2 and Icd10Code == 'K709')  B_K709,
 
-  sum(Race == 1 and Icd10Code == 'Y14')  W_Y14,
-  sum(Race == 2 and Icd10Code == 'Y14')  B_Y14,
-
-  sum(Race == 1 and Icd10Code == 'F191')  W_F191,
-  sum(Race == 2 and Icd10Code == 'F191')  B_F191
+  sum(Race == 1 and Icd10Code == 'X44')  W_X44,
+  sum(Race == 2 and Icd10Code == 'X44')  B_X44
 
 
 
@@ -274,7 +272,7 @@ select Age,count(*) Total ,sum(Race == 1) as White,
    (
 
    select Code,Description from Icd10Code
-   where description like '%drug%'
+   where description like '%alcohol%'
  
    
  
@@ -295,12 +293,12 @@ g <- ggplot(dat = data,
        aes(x=Age, y=Total)) + 
       geom_line(aes(color=Group, group=Group)) + 
       geom_point(aes(color=Group, shape=Group, group=Group), size=1)+
-  ggtitle("X44 - Accidental poisoning by and exposure to other and unspecified drugs, medicaments and biological substances\nby Age")
+  ggtitle("K703 - Alcoholic cirrhosis of liver \nby Age")
 
 ```
-### Graph of X74
+### Graph of K703
 
-Here's the actual graph of X44.  You can see the impact.
+Here's the actual graph of K703.  You can see the impact.
 
 
 ```{r}
@@ -316,7 +314,7 @@ g
 
 
 # Here's more detail
-kable(v2Data)
+datatable(v2Data, class = 'compact')
 
 
 
