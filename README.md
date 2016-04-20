@@ -1,9 +1,14 @@
-#BigData Group4 Deaths
+#BigData Group4 Colleges
+Comparing the US Dept. of Education: College Scorecard dataset against the World University Rankings dataset.
+College Scorecard: https://www.kaggle.com/kaggle/college-scorecard
+World University Rankings: https://www.kaggle.com/mylesoneill/world-university-rankings
 
-##Script Instrucations
-1. Download the data set from [HERE](https://www.kaggle.com/cdc/mortality/downloads/DeathRecords.zip).
-2. Unzip the **database.sqlite** file downloaded into a new folder named **input**.
-3. Place the **script.rmd** file on the same directory level as the **input** folder.
-4. Open the **script.rmd** file in RStudio and either:
-..*Execute each code block individually
-..*Use the Knit tool in RStudio to export the code to an easy to read HTML or PDF format
+1. How does the ranking of the university correspond with admission rate?
+2. Is there a correlation between cost of tuition and university ranking?
+3. What is the correlation between average SAT score and admission rate?
+
+##Script Instructions
+1. Download the US Dept. of Education Scorecard and World University Rankings datasets from the link above.
+2. The unzipped folders should be placed at the same level as the **collegeRankingScript.r** file.
+3. Open the **collegeRankingScript.r** file in Rstudio and execute. 
+

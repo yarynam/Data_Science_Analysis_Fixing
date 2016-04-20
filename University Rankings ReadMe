@@ -1,9 +1,0 @@
-Comparing the US Dept. of Education: College Scorecard dataset against the World University Rankings dataset.
-College Scorecard: https://www.kaggle.com/kaggle/college-scorecard
-World University Rankings: https://www.kaggle.com/mylesoneill/world-university-rankings
-
-1. What is the correlation between university ranking and cost of tuition? (Differentiate betwwen public and private universities if possible.)
-
-2. Do higher ranking universities have a higher ratio of females to males or vice versa?
-
-3. How does number of students enrolled at a university correlate with the ranking of the university?
