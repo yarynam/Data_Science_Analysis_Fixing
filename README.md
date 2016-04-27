@@ -11,4 +11,4 @@ World University Rankings: https://www.kaggle.com/mylesoneill/world-university-r
 1. Open the **collegeRankingScript.r** file in Rstudio and execute. 
 
 ###Side Note
-I manually condensed and combined these datasets. You may download and do your own data intergration if you feel my work was not sufficient :(
+**Untitled.ipynb** has the work of combining the datasets and creating the condensed datasets used in the **collegeRankingScript.r** file.
