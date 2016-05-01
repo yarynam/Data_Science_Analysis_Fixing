@@ -1,5 +1,3 @@
-# Data_Science_Analysis_Fixing
-
 <h1> Data Science Analysis Fixing  Project</h1> 
 
 Data: https://www.kaggle.com/cdc/mortality
