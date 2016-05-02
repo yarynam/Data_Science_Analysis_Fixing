@@ -7,7 +7,10 @@ The file 'analysis.R' takes the tables included in this repository and uses them
 
 ## Questions answered: 
 1. Does the approval rating of a President influence the rate of babies named after them?
+
 The original approach to the problem focused on approval ratings. Nonetheless it is harder to use approval ratings than simply creating a before-and-after evaluation method. The plots in Analysis.R present several cases. For example, the plots of the popularity of the name 'Barack', 'Woodrow', or 'Lyndon' all present noticeable trend changes after the corresponding period for that president. However, the model captures only a significant variable in the case of Barack Obama, when the intercept is not significant and the year variable is also not significant. In the case of Lyndon B. Johnson, it can be seen that there are significant variables, but there is a a large lag and intercepts. In other words the changes on the name popularity follows trends in the population (baby boomers, etc). A few other cases are shown in the script to demonstrate that this simple statistical approach is useful in deciding whether a large change is significant or not.
+
 
 2. Does a famous sports player's MVP status influence the popularity of babies named after their MVP recognition?
 
+The same approach presented in question 1 can be used to improve on the analysis presented previously and to derive an objective way to determine trend changes rather than simply using graphs. 
