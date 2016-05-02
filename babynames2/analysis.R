@@ -1,5 +1,5 @@
 #SET WORKING DIRECTORY
-setwd('~/Desktop/Data_Science_Analysis_Fixing/baby_names')
+setwd('~/Desktop/Data_Science_Analysis_Fixing/babynames2')
 
 #LOAD LIBRARIES
 library(ggplot2)
